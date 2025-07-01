@@ -1,0 +1,154 @@
+{
+  "version": 1.0,
+  "description": "SignalSim Configuration",
+  "comment": "",
+  "time": {
+    "type": "UTC"
+  },
+  "trajectory": {
+    "name": "Default Trajectory",
+    "initPosition": {
+      "type": "LLA",
+      "format": "d",
+      "longitude": 0.0,
+      "latitude": 0.0,
+      "altitude": 0.0,
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "initVelocity": {
+      "type": "SCU",
+      "speed": 0.0,
+      "course": 0.0,
+      "up": 0.0,
+      "east": 0.0,
+      "north": 0.0,
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "speedUnit": "m/s",
+      "angleUnit": "degree"
+    },
+    "trajectoryList": []
+  },
+  "ephemeris": [
+    {
+      "type": "RINEX",
+      "name": "D:/NC/SRay/Devel/SignalSims/GNSSSigSimGUI/EphData/BRDC00IGS_R_20211700000_01D_MN.rnx"
+    }
+  ],
+  "output": {
+    "type": "IFdata",
+    "format": "IQ8",
+    "sampleFreq": 20.0,
+    "centerFreq": 1575.42,
+    "name": "output.bin",
+    "config": {
+      "elevationMask": 5.0,
+      "maskOut": []
+    },
+    "systemSelect": [
+      {
+        "system": "GPS",
+        "signal": "L1CA",
+        "enable": true
+      },
+      {
+        "system": "GPS",
+        "signal": "L1C",
+        "enable": false
+      },
+      {
+        "system": "GPS",
+        "signal": "L2C",
+        "enable": false
+      },
+      {
+        "system": "GPS",
+        "signal": "L2P",
+        "enable": false
+      },
+      {
+        "system": "GPS",
+        "signal": "L5",
+        "enable": false
+      },
+      {
+        "system": "BDS",
+        "signal": "B1C",
+        "enable": false
+      },
+      {
+        "system": "BDS",
+        "signal": "B1I",
+        "enable": false
+      },
+      {
+        "system": "BDS",
+        "signal": "B2I",
+        "enable": false
+      },
+      {
+        "system": "BDS",
+        "signal": "B3I",
+        "enable": false
+      },
+      {
+        "system": "BDS",
+        "signal": "B2a",
+        "enable": false
+      },
+      {
+        "system": "BDS",
+        "signal": "B2b",
+        "enable": false
+      },
+      {
+        "system": "Galileo",
+        "signal": "E1",
+        "enable": false
+      },
+      {
+        "system": "Galileo",
+        "signal": "E5a",
+        "enable": false
+      },
+      {
+        "system": "Galileo",
+        "signal": "E5b",
+        "enable": false
+      },
+      {
+        "system": "Galileo",
+        "signal": "E5",
+        "enable": false
+      },
+      {
+        "system": "Galileo",
+        "signal": "E6",
+        "enable": false
+      },
+      {
+        "system": "GLONASS",
+        "signal": "G1",
+        "enable": false
+      },
+      {
+        "system": "GLONASS",
+        "signal": "G2",
+        "enable": false
+      }
+    ]
+  },
+  "power": {
+    "noiseFloor": -174.0,
+    "initPower": {
+      "unit": "dBHz",
+      "value": 45.0
+    },
+    "elevationAdjust": false,
+    "signalPower": []
+  },
+  "almanac": []
+}

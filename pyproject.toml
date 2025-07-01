@@ -1,0 +1,20 @@
+[project]
+name = "gnsssigsimgui"
+version = "1.0.0"
+description = "GNSS SignalSim GUI - Comprehensive GNSS Signal Simulator (SignalSim) Configuration Tool"
+readme = "README.md"
+authors = [
+    {name = "Muhammad Qaisar Ali", email = "muhammadqaisarali1@gmail.com"}
+]
+
+license = {text = "MIT"}
+
+requires-python = ">=3.13"
+
+dependencies = [
+    "folium>=0.20.0",
+    "jsonschema>=4.24.0",
+    "pyqt6>=6.9.1",
+    "pyqt6-webengine>=6.9.0",
+    "tomli-w>=1.0.0",
+]
