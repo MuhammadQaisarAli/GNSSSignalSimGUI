@@ -22,7 +22,7 @@ from core.utils.logger import info, error
 class TemplateManager:
     """Manages configuration templates for SignalSim."""
 
-    def __init__(self, templates_dir: str = "templates"):
+    def __init__(self, templates_dir: str = "data/templates"):
         self.templates_dir = templates_dir
         self.ensure_templates_dir()
         self.built_in_templates = self._create_built_in_templates()

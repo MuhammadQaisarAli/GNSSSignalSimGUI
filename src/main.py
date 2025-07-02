@@ -8,6 +8,7 @@ Main entry point for the GNSSSignalSim GUI application.
 A comprehensive PyQt6-based GUI for generating GNSS signal simulation configuration files
 with enhanced constellation support and interactive features.
 https://github.com/MuhammadQaisarAli/SignalSim
+https://github.com/globsky/SignalSim
 """
 
 import sys

@@ -142,7 +142,7 @@ class PreferencesDialog(QDialog):
         # Default config path
         config_path_layout = QHBoxLayout()
         self.default_config_path = QLineEdit()
-        self.default_config_path.setPlaceholderText("Select default directory for configuration files...")
+        self.default_config_path.setPlaceholderText("data/configs")
         config_path_layout.addWidget(self.default_config_path)
         
         self.browse_config_button = QPushButton("Browse...")
@@ -155,7 +155,7 @@ class PreferencesDialog(QDialog):
         # Default ephemeris path
         ephemeris_path_layout = QHBoxLayout()
         self.default_ephemeris_path = QLineEdit()
-        self.default_ephemeris_path.setPlaceholderText("Select default directory for ephemeris files...")
+        self.default_ephemeris_path.setPlaceholderText("data/ephemeris")
         ephemeris_path_layout.addWidget(self.default_ephemeris_path)
         
         self.browse_ephemeris_button = QPushButton("Browse...")
@@ -165,19 +165,33 @@ class PreferencesDialog(QDialog):
         
         paths_layout.addRow("Default ephemeris path:", ephemeris_path_layout)
         
-        # Default output path
-        output_path_layout = QHBoxLayout()
-        self.default_output_path = QLineEdit()
-        self.default_output_path.setPlaceholderText("Select default directory for output files...")
-        output_path_layout.addWidget(self.default_output_path)
+        # Default IFDataGen executable path
+        ifdatagen_path_layout = QHBoxLayout()
+        self.default_ifdatagen_path = QLineEdit()
+        self.default_ifdatagen_path.setPlaceholderText("data/ifdatagen")
+        ifdatagen_path_layout.addWidget(self.default_ifdatagen_path)
         
-        self.browse_output_button = QPushButton("Browse...")
-        self.browse_output_button.setMaximumWidth(80)
-        self.browse_output_button.clicked.connect(self.browse_output_path)
-        output_path_layout.addWidget(self.browse_output_button)
+        self.browse_ifdatagen_button = QPushButton("Browse...")
+        self.browse_ifdatagen_button.setMaximumWidth(80)
+        self.browse_ifdatagen_button.clicked.connect(self.browse_ifdatagen_path)
+        ifdatagen_path_layout.addWidget(self.browse_ifdatagen_button)
         
-        paths_layout.addRow("Default output path:", output_path_layout)
+        paths_layout.addRow("Default IFDataGen path:", ifdatagen_path_layout)
         
+        # Default generated outputs path
+        generated_path_layout = QHBoxLayout()
+        self.default_generated_path = QLineEdit()
+        self.default_generated_path.setPlaceholderText("data/generated")
+        generated_path_layout.addWidget(self.default_generated_path)
+        
+        self.browse_generated_button = QPushButton("Browse...")
+        self.browse_generated_button.setMaximumWidth(80)
+        self.browse_generated_button.clicked.connect(self.browse_generated_path)
+        generated_path_layout.addWidget(self.browse_generated_button)
+        
+        paths_layout.addRow("Default generated path:", generated_path_layout)
+        
+          
         layout.addWidget(paths_group)
         
         # Add info section
@@ -187,7 +201,10 @@ class PreferencesDialog(QDialog):
         info_label = QLabel(
             "- These paths will be used as default locations when opening file dialogs\n"
             "- Leave empty to use the application's current directory\n"
-            "- Paths will be created automatically if they don't exist"
+            "- Paths will be created automatically if they don't exist\n"
+            "- IFDataGen path: Directory containing IFDataGen.exe (default: data/ifdatagen)\n"
+            "- Generated path: Base directory for simulation outputs (default: data/generated)\n"
+            "- Output files are automatically organized in subdirectories by type\n"
         )
         info_label.setStyleSheet("color: #666; font-size: 9px; padding: 5px;")
         info_layout.addWidget(info_label)
@@ -276,17 +293,31 @@ class PreferencesDialog(QDialog):
         if directory:
             self.default_ephemeris_path.setText(directory)
     
-    def browse_output_path(self):
-        """Browse for default output directory."""
-        current_path = self.default_output_path.text() or "."
+    
+    def browse_ifdatagen_path(self):
+        """Browse for default IFDataGen directory."""
+        current_path = self.default_ifdatagen_path.text() or "."
         directory = QFileDialog.getExistingDirectory(
             self,
-            "Select Default Output Directory",
+            "Select Default IFDataGen Directory",
             current_path,
             QFileDialog.Option.ShowDirsOnly | QFileDialog.Option.DontResolveSymlinks
         )
         if directory:
-            self.default_output_path.setText(directory)
+            self.default_ifdatagen_path.setText(directory)
+    
+    def browse_generated_path(self):
+        """Browse for default generated outputs directory."""
+        current_path = self.default_generated_path.text() or "."
+        directory = QFileDialog.getExistingDirectory(
+            self,
+            "Select Default Generated Outputs Directory",
+            current_path,
+            QFileDialog.Option.ShowDirsOnly | QFileDialog.Option.DontResolveSymlinks
+        )
+        if directory:
+            self.default_generated_path.setText(directory)
+    
     
     def load_preferences(self):
         """Load preferences from settings."""
@@ -305,9 +336,10 @@ class PreferencesDialog(QDialog):
         
         # Paths tab
         paths_settings = self.settings_manager.get_section("paths")
-        self.default_config_path.setText(paths_settings.get("default_config_path", ""))
-        self.default_ephemeris_path.setText(paths_settings.get("default_ephemeris_path", ""))
-        self.default_output_path.setText(paths_settings.get("default_output_path", ""))
+        self.default_config_path.setText(paths_settings.get("default_config_path", "data/configs"))
+        self.default_ephemeris_path.setText(paths_settings.get("default_ephemeris_path", "data/ephemeris"))
+        self.default_ifdatagen_path.setText(paths_settings.get("default_ifdatagen_path", "data/ifdatagen"))
+        self.default_generated_path.setText(paths_settings.get("default_generated_path", "data/generated"))
         
         # Logging tab
         logging_settings = self.settings_manager.get_section("logging")
@@ -342,7 +374,8 @@ class PreferencesDialog(QDialog):
         self.settings_manager.set_section("paths", {
             "default_config_path": self.default_config_path.text(),
             "default_ephemeris_path": self.default_ephemeris_path.text(),
-            "default_output_path": self.default_output_path.text()
+            "default_generated_path": self.default_generated_path.text(),
+            "ifdatagen_executable_path": self.ifdatagen_executable_path.text()
         })
         
         # Save logging settings

@@ -1,9 +1,15 @@
 # GNSSSignalSim GUI
 
 **Author:** Muhammad Qaisar Ali
-**GitHub:** https://github.com/MuhammadQaisarAli
+**GitHub:** [https://github.com/MuhammadQaisarAli](https://github.com/MuhammadQaisarAli)
 
 A comprehensive PyQt6-based graphical user interface for configuring GNSS signal simulation parameters of the `IFdataGen` generator in [SignalSim](https://github.com/MuhammadQaisarAli/SignalSim). This application provides an intuitive workflow for creating, editing, and validating configuration files for GNSS signal simulators with support for multiple constellations and advanced trajectory modeling.
+
+## Demo Video
+
+![Demo Video](docs/README/videos/demo_video.mp4)
+
+## GUI Snapshots
 
 ![Ephemeris and Time Tab](docs/README/images/tab_ephemeris_and_time.png)
 ![Trajactory Tab](docs/README/images/tab_trajactory.png)
@@ -262,8 +268,15 @@ GNSSSignalSimGUI/
 ├── uv.lock
 ├── data/                     # Data files for the application
 │   ├── configs/              # Default and user-saved configurations
-│   └── ephemeris/            # Sample RINEX ephemeris files
+│   ├── ephemeris/            # Sample RINEX ephemeris files
+│   ├── generated/            # Default location for generated outouts of IFdataGen
+│   │   ├── binsignals/       # Default location for generated binsignals
+│   │   ├── observation/      # Default location for generated observation
+│   │   └── pvt/              # Default location for generated pvt
+│   ├── ifdatagen/            # Default for the IFdataGen exectable (From SignalSim Repo)
+│   └── templets/             # Templets
 ├── docs/                     # Project documentation
+│   ├── README/               # Resources for README.md
 │   └── specifications/       # Technical specifications and design documents
 └── src/                      # Source code
     ├── core/                 # Core application logic (non-GUI)
@@ -329,10 +342,26 @@ This project is licensed under the MIT License - see the [LICENSE](/LICENSE) fil
 
 ### 2025
 
-- 2025/07/02
+- **2025/07/03 [Version 1.0.1]**
   - Add MIT License
+  - Add dedicated Generate tab with real-time signal generation interface
+  - Implement proper IFDataGen working directory execution from target output folder
+  - Add automatic directory structure creation: data/generated/<output-type>/<filename>/
+  - Enhance path management with default paths for executable and outputs
+  - Streamline Output Settings tab to focus on type/format configuration only
+  - Fix config file format to use filenames only for IFDataGen compatibility
+  - Add real-time output viewer with zoom controls and log saving
+  - Implement single temp.json config with automatic cleanup on exit
+  - Change binary file extension to .bin for consistency
+  - Add overwrite protection for existing output directories
+  - Maximize output text viewer space for better logging visibility
+  - Add IFDataGen executable path configuration in preferences
+  - Fix `Issue #1`: Complete IFDataGen integration and file management overhaul
+  - Fix some other paths issues
+  - Add [demo video](docs/README/videos/demo_video.mp4)
 
-- 2025/07/01 [Version 1.0.0]
+
+- **2025/07/02 [Version 1.0.0]**
   - Initial release with complete workflow implementation
   - PyQt6-based GUI with tabbed interface
   - Smart workflow management with intelligent validation

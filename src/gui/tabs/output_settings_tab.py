@@ -76,31 +76,6 @@ class OutputSettingsTab(QWidget):
         type_layout.addStretch()
         file_layout.addRow("Output Type:", type_layout)
 
-        # Output file selection
-        file_selection_layout = QHBoxLayout()
-        self.output_file_edit = QLineEdit()
-        self.output_file_edit.setPlaceholderText("simulation_output.iq8")
-        file_selection_layout.addWidget(self.output_file_edit)
-        
-        self.browse_button = QPushButton("Browse...")
-        self.browse_button.clicked.connect(self.browse_output_file)
-        self.browse_button.setMaximumWidth(100)
-        file_selection_layout.addWidget(self.browse_button)
-        
-        file_layout.addRow("File Name:", file_selection_layout)
-
-        # Output directory
-        dir_layout = QHBoxLayout()
-        self.output_dir_edit = QLineEdit()
-        self.output_dir_edit.setPlaceholderText("/path/to/output/directory")
-        dir_layout.addWidget(self.output_dir_edit)
-        
-        self.browse_dir_button = QPushButton("Browse...")
-        self.browse_dir_button.clicked.connect(self.browse_output_directory)
-        self.browse_dir_button.setMaximumWidth(100)
-        dir_layout.addWidget(self.browse_dir_button)
-        
-        file_layout.addRow("Directory:", dir_layout)
 
         layout.addWidget(file_group)
 
@@ -280,8 +255,6 @@ class OutputSettingsTab(QWidget):
         """Connect widget signals."""
         self.output_type_combo.currentTextChanged.connect(self.on_output_type_changed)
         self.output_format_combo.currentTextChanged.connect(self.update_config)
-        self.output_file_edit.textChanged.connect(self.update_config)
-        self.output_dir_edit.textChanged.connect(self.update_config)
         self.sample_freq_spin.valueChanged.connect(self.update_config)
         self.center_freq_spin.valueChanged.connect(self.update_config)
         self.interval_spin.valueChanged.connect(self.update_config)
@@ -289,44 +262,6 @@ class OutputSettingsTab(QWidget):
         self.observation_output_check.stateChanged.connect(self.update_config)
         self.almanac_output_check.stateChanged.connect(self.update_config)
 
-    def browse_output_file(self):
-        """Browse for output file."""
-        output_type = self.output_type_combo.currentData()
-        
-        if output_type == OutputType.IF_DATA:
-            file_filter = "IF Data Files (*.iq8 *.iq4 *.bin);;All Files (*)"
-            default_name = "simulation_output.iq8"
-        elif output_type == OutputType.POSITION:
-            file_filter = "Position Files (*.kml *.nmea);;All Files (*)"
-            default_name = "position_output.kml"
-        elif output_type == OutputType.OBSERVATION:
-            file_filter = "RINEX Files (*.obs *.rnx);;All Files (*)"
-            default_name = "observation_output.obs"
-        else:
-            file_filter = "All Files (*)"
-            default_name = "output"
-
-        file_path, _ = QFileDialog.getSaveFileName(
-            self, "Select Output File", get_default_path("output") + "/" + default_name, file_filter
-        )
-
-        if file_path:
-            # Split into directory and filename
-            directory = os.path.dirname(file_path)
-            filename = os.path.basename(file_path)
-            
-            self.output_file_edit.setText(filename)
-            if directory:
-                self.output_dir_edit.setText(directory)
-
-    def browse_output_directory(self):
-        """Browse for output directory."""
-        directory = QFileDialog.getExistingDirectory(
-            self, "Select Output Directory", get_default_path("output")
-        )
-
-        if directory:
-            self.output_dir_edit.setText(directory)
 
     def on_output_type_changed(self):
         """Handle output type change."""
@@ -380,19 +315,13 @@ class OutputSettingsTab(QWidget):
         """Update the output summary display."""
         output_type = self.output_type_combo.currentData()
         output_format = self.output_format_combo.currentData()
-        filename = self.output_file_edit.text()
-        directory = self.output_dir_edit.text()
         
         summary_parts = []
         
-        # Primary output
-        if filename:
-            full_path = os.path.join(directory, filename) if directory else filename
-            summary_parts.append(f"Primary Output: {output_type.value}")
-            summary_parts.append(f"Format: {output_format.value if output_format else 'Not set'}")
-            summary_parts.append(f"File: {full_path}")
-        else:
-            summary_parts.append("Primary Output: Not configured")
+        # Primary output configuration
+        summary_parts.append(f"Output Type: {output_type.value if output_type else 'Not set'}")
+        summary_parts.append(f"Format: {output_format.value if output_format else 'Not set'}")
+        summary_parts.append("File location: Configured in Generate tab")
         
         # Type-specific settings
         if output_type == OutputType.IF_DATA:
@@ -421,15 +350,8 @@ class OutputSettingsTab(QWidget):
         # Update primary output settings
         self.config.output.type = self.output_type_combo.currentData()
         self.config.output.format = self.output_format_combo.currentData()
-        self.config.output.name = self.output_file_edit.text()
         
-        # Handle directory - could be part of name or separate
-        directory = self.output_dir_edit.text()
-        filename = self.output_file_edit.text()
-        if directory and filename:
-            self.config.output.name = os.path.join(directory, filename)
-        elif filename:
-            self.config.output.name = filename
+        # Note: output.name is now managed by the Generate tab
         
         # Update type-specific settings
         self.config.output.sample_freq = self.sample_freq_spin.value()
@@ -446,8 +368,6 @@ class OutputSettingsTab(QWidget):
         # Block signals
         self.output_type_combo.blockSignals(True)
         self.output_format_combo.blockSignals(True)
-        self.output_file_edit.blockSignals(True)
-        self.output_dir_edit.blockSignals(True)
         self.sample_freq_spin.blockSignals(True)
         self.center_freq_spin.blockSignals(True)
         self.interval_spin.blockSignals(True)
@@ -469,14 +389,7 @@ class OutputSettingsTab(QWidget):
                     self.output_format_combo.setCurrentIndex(i)
                     break
 
-            # Set file and directory
-            output_name = self.config.output.name
-            if output_name:
-                directory = os.path.dirname(output_name)
-                filename = os.path.basename(output_name)
-                self.output_file_edit.setText(filename)
-                if directory:
-                    self.output_dir_edit.setText(directory)
+            # Note: File and directory are now managed by Generate tab
 
             # Set numeric values
             self.sample_freq_spin.setValue(self.config.output.sample_freq)
@@ -491,8 +404,6 @@ class OutputSettingsTab(QWidget):
             # Re-enable signals
             self.output_type_combo.blockSignals(False)
             self.output_format_combo.blockSignals(False)
-            self.output_file_edit.blockSignals(False)
-            self.output_dir_edit.blockSignals(False)
             self.sample_freq_spin.blockSignals(False)
             self.center_freq_spin.blockSignals(False)
             self.interval_spin.blockSignals(False)

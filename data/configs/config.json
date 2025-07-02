@@ -1,6 +1,6 @@
 {
   "version": 1.0,
-  "description": "SignalSim Configuration",
+  "description": "GNSSSignalSim Configuration",
   "comment": "",
   "time": {
     "type": "UTC"
@@ -12,38 +12,25 @@
       "format": "d",
       "longitude": 0.0,
       "latitude": 0.0,
-      "altitude": 0.0,
-      "x": 0.0,
-      "y": 0.0,
-      "z": 0.0
+      "altitude": 0.0
     },
     "initVelocity": {
       "type": "SCU",
       "speed": 0.0,
       "course": 0.0,
       "up": 0.0,
-      "east": 0.0,
-      "north": 0.0,
-      "x": 0.0,
-      "y": 0.0,
-      "z": 0.0,
-      "speedUnit": "m/s",
+      "speedUnit": "mps",
       "angleUnit": "degree"
     },
     "trajectoryList": []
   },
-  "ephemeris": [
-    {
-      "type": "RINEX",
-      "name": "D:/NC/SRay/Devel/SignalSims/GNSSSigSimGUI/EphData/BRDC00IGS_R_20211700000_01D_MN.rnx"
-    }
-  ],
+  "ephemeris": [],
   "output": {
     "type": "IFdata",
-    "format": "IQ8",
+    "format": "IQ4",
     "sampleFreq": 20.0,
     "centerFreq": 1575.42,
-    "name": "output.bin",
+    "name": "D:/NC/SRay/Devel/SignalSims/GNSSSigSimGUI/data/generated\\binsignals\\output\\output.iq8",
     "config": {
       "elevationMask": 5.0,
       "maskOut": []

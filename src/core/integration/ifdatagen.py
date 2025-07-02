@@ -15,6 +15,7 @@ from typing import Optional
 from PyQt6.QtCore import QThread, pyqtSignal, QObject
 from core.config.models import GNSSSignalSimConfig
 from core.utils.logger import info, debug, error
+from core.utils.settings import get_ifdatagen_executable_path, get_generated_output_path, get_default_path
 
 
 class IFDataGenWorker(QThread):
@@ -25,10 +26,11 @@ class IFDataGenWorker(QThread):
     finished = pyqtSignal(bool, str)  # Success, message
     output_received = pyqtSignal(str)  # Raw output from process
 
-    def __init__(self, config_file: str, ifdatagen_path: str):
+    def __init__(self, config_file: str, ifdatagen_path: str, working_dir: str = None):
         super().__init__()
         self.config_file = config_file
         self.ifdatagen_path = ifdatagen_path
+        self.working_dir = working_dir or os.path.dirname(self.ifdatagen_path)
         self.process = None
         self._stop_requested = False
 
@@ -55,16 +57,32 @@ class IFDataGenWorker(QThread):
             self.status_updated.emit("Executing IFDataGen...")
             self.progress_updated.emit(10)
 
-            # Run IFDataGen.exe
-            cmd = [self.ifdatagen_path, self.config_file]
+            # Run IFDataGen.exe with config file argument
+            # Convert config file path to be relative to working directory if possible
+            try:
+                rel_config_path = os.path.relpath(self.config_file, self.working_dir)
+                if not rel_config_path.startswith('..'):
+                    config_arg = rel_config_path
+                else:
+                    config_arg = os.path.abspath(self.config_file)
+            except:
+                config_arg = os.path.abspath(self.config_file)
+            
+            cmd = [self.ifdatagen_path, "--config", config_arg]
             debug(f"Running command: {' '.join(cmd)}")
+            debug(f"Working directory: {self.working_dir}")
+            debug(f"Config file path: {self.config_file}")
+            debug(f"Config argument: {config_arg}")
+            debug(f"Config file exists: {os.path.exists(self.config_file)}")
+            debug(f"Executable exists: {os.path.exists(self.ifdatagen_path)}")
+            debug(f"Working dir exists: {os.path.exists(self.working_dir)}")
 
             self.process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
-                cwd=os.path.dirname(self.ifdatagen_path),
+                cwd=self.working_dir,  # Run from the target output directory
             )
 
             # Read output line by line
@@ -148,8 +166,14 @@ class IFDataGenIntegration(QObject):
         self.ifdatagen_path = self.find_ifdatagen_executable()
 
     def find_ifdatagen_executable(self) -> Optional[str]:
-        """Find IFDataGen.exe in common locations."""
-        # Common locations to search for IFDataGen.exe
+        """Find IFDataGen.exe using settings system."""
+        # First try to get from settings
+        exe_path = get_ifdatagen_executable_path()
+        if exe_path:
+            info(f"Found IFDataGen.exe from settings: {exe_path}")
+            return exe_path
+
+        # Fallback to common locations
         search_paths = [
             "IFDataGen.exe",  # Current directory
             "bin/IFDataGen.exe",
@@ -195,19 +219,65 @@ class IFDataGenIntegration(QObject):
             return False
 
         try:
-            # Create temporary config file
-            temp_dir = output_dir or tempfile.gettempdir()
-            config_file = os.path.join(temp_dir, "temp_config.json")
+            # Use provided output directory or create one based on config
+            if output_dir:
+                working_dir = output_dir
+            else:
+                # Get output type and filename from config
+                output_type = getattr(config.output, 'type', 'IF_DATA')
+                output_type_str = output_type.value if hasattr(output_type, 'value') else str(output_type)
+                
+                if config.output.name:
+                    filename = os.path.basename(config.output.name)
+                    name_without_ext = os.path.splitext(filename)[0]
+                    working_dir = get_generated_output_path(output_type_str, name_without_ext, create_dir=True)
+                else:
+                    working_dir = get_generated_output_path(output_type_str, "default_output", create_dir=True)
 
-            # Save configuration to temporary file
+            # Ensure output directory exists (in case it wasn't created by Generate tab)
+            working_dir = os.path.normpath(working_dir)
+            os.makedirs(working_dir, exist_ok=True)
+            
+            # Create config file in the configs directory (not in output directory)
+            configs_dir = get_default_path("config")
+            os.makedirs(configs_dir, exist_ok=True)
+            
+            # Use single temp.json file for all generations
+            config_filename = "temp.json"
+            config_file = os.path.join(configs_dir, config_filename)
+            # Normalize path separators for current OS
+            config_file = os.path.normpath(config_file)
+
+            # Update config to use relative paths for IFDataGen
             config_dict = config.to_dict()
-            with open(config_file, "w") as f:
-                json.dump(config_dict, f, indent=2)
+            
+            # Set output file as just filename (since IFDataGen will run from working_dir)
+            if config.output.name:
+                filename = os.path.basename(config.output.name)
+                # Remove any path separators and use only filename
+                filename = filename.replace('\\', '').replace('/', '')
+                config_dict['output']['name'] = filename
+            
+            # Save configuration file
+            with open(config_file, "w", encoding='utf-8') as f:
+                json.dump(config_dict, f, indent=2, ensure_ascii=False)
 
-            info(f"Temporary config file created: {config_file}")
+            # Verify the file was created and is readable
+            if os.path.exists(config_file):
+                try:
+                    with open(config_file, "r", encoding='utf-8') as f:
+                        test_load = json.load(f)
+                    info(f"Config file created and verified: {config_file}")
+                except Exception as e:
+                    error(f"Config file created but not readable: {e}")
+            else:
+                error(f"Config file was not created: {config_file}")
+            
+            info(f"Working directory: {working_dir}")
+            debug(f"Config file content preview: {json.dumps(config_dict, indent=2)[:200]}...")
 
-            # Create and start worker thread
-            self.worker = IFDataGenWorker(config_file, self.ifdatagen_path)
+            # Create and start worker thread (pass working directory for execution)
+            self.worker = IFDataGenWorker(config_file, self.ifdatagen_path, working_dir)
 
             # Connect signals
             self.worker.progress_updated.connect(self.progress_updated)
@@ -228,16 +298,13 @@ class IFDataGenIntegration(QObject):
 
     def on_generation_finished(self, success: bool, message: str):
         """Handle generation completion."""
-        # Clean up temporary files if needed
-        if self.worker:
-            temp_config = self.worker.config_file
-            if os.path.exists(temp_config) and "temp_config.json" in temp_config:
-                try:
-                    os.remove(temp_config)
-                    debug(f"Cleaned up temporary config file: {temp_config}")
-                except Exception as e:
-                    debug(f"Failed to clean up temporary file: {e}")
-
+        if success:
+            # Add information about output location
+            if self.worker:
+                output_dir = self.worker.working_dir
+                message += f"\n\nOutput files saved to:\n{output_dir}"
+                message += f"\n\nTemporary config used: temp.json"
+        
         self.generation_finished.emit(success, message)
 
     def stop_generation(self):
@@ -252,6 +319,17 @@ class IFDataGenIntegration(QObject):
         if self.worker and self.worker.isRunning():
             return "Running"
         return "Idle"
+    
+    def cleanup_temp_files(self):
+        """Clean up temporary config files."""
+        try:
+            configs_dir = get_default_path("config")
+            temp_config = os.path.join(configs_dir, "temp.json")
+            if os.path.exists(temp_config):
+                os.remove(temp_config)
+                debug(f"Cleaned up temporary config file: {temp_config}")
+        except Exception as e:
+            debug(f"Failed to clean up temporary config file: {e}")
 
 
 # Global integration instance

@@ -32,7 +32,7 @@ from core.config.models import GNSSSignalSimConfig, get_default_system_select
 from core.utils.logger import info, debug, log_button_click, error, configure_logging_from_settings
 from core.utils.settings import get_settings_manager, get_default_path
 from core.utils.version import get_app_title, get_cached_project_info
-from core.integration.ifdatagen import IFDataGenIntegration
+from core.integration.ifdatagen import ifdatagen_integration
 from core.workflow.manager import get_workflow_manager, WorkflowStep, ValidationStatus
 from core.workflow.smart_workflow import get_smart_workflow_manager, ValidationLevel, register_smart_validation_callback
 from gui.tabs.basic_tab import BasicTab
@@ -41,6 +41,7 @@ from gui.tabs.trajectory_tab import TrajectoryTab
 from gui.tabs.signal_selection_tab import SignalSelectionTab
 from gui.tabs.power_tab import PowerTab
 from gui.tabs.output_settings_tab import OutputSettingsTab
+from gui.tabs.generate_tab import GenerateTab
 from gui.tabs.almanac_tab import AlmanacTab
 from gui.dialogs.template_dialog import TemplateDialog
 from gui.dialogs.about import AboutDialog
@@ -138,6 +139,7 @@ class MainWindow(QMainWindow):
         self.signal_selection_tab = SignalSelectionTab(self.config)
         self.power_tab = PowerTab(self.config)
         self.output_settings_tab = OutputSettingsTab(self.config)
+        self.generate_tab = GenerateTab(self.config)
         self.almanac_tab = AlmanacTab(self.config)  # Keep for future use
 
         # Add tabs to widget in workflow sequence
@@ -147,6 +149,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.signal_selection_tab, "Signal Selection")
         self.tab_widget.addTab(self.power_tab, "Signal Power")
         self.tab_widget.addTab(self.output_settings_tab, "Output Settings")
+        self.tab_widget.addTab(self.generate_tab, "Generate")
         
         # Conditionally add almanac tab (hidden for now)
         if self.show_almanac_tab:
@@ -208,28 +211,6 @@ class MainWindow(QMainWindow):
         self.load_button = QPushButton("Load Config")
         self.load_button.clicked.connect(lambda: self.load_config_with_logging())
         button_layout.addWidget(self.load_button)
-
-        self.generate_button = QPushButton("Generate Signals")
-        self.generate_button.clicked.connect(
-            lambda: self.generate_signals_with_logging()
-        )
-        self.generate_button.setStyleSheet("""
-            QPushButton {
-                background-color: #4CAF50;
-                color: white;
-                font-weight: bold;
-                padding: 8px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-            QPushButton:pressed {
-                background-color: #3d8b40;
-            }
-        """)
-        button_layout.addWidget(self.generate_button)
 
         layout.addLayout(button_layout)
 
@@ -337,8 +318,6 @@ class MainWindow(QMainWindow):
         toolbar.addAction("New", self.new_config)
         toolbar.addAction("Open", self.load_config)
         toolbar.addAction("Save", self.save_config)
-        toolbar.addSeparator()
-        toolbar.addAction("Generate", self.generate_signals)
 
     def setup_status_bar(self):
         """Set up the status bar."""
@@ -365,6 +344,7 @@ class MainWindow(QMainWindow):
             self.signal_selection_tab,
             self.power_tab,
             self.output_settings_tab,
+            self.generate_tab,
             self.almanac_tab,  # Connect even if hidden
         ]
         
@@ -621,7 +601,7 @@ class MainWindow(QMainWindow):
     def generate_signals(self):
         """Generate signals using IFDataGen.exe."""
         # Check if IFDataGen is available
-        if not IFDataGenIntegration.is_available():
+        if not ifdatagen_integration.is_available():
             reply = QMessageBox.question(
                 self,
                 "IFDataGen Not Found",
@@ -638,7 +618,7 @@ class MainWindow(QMainWindow):
                     "Executable Files (*.exe);;All Files (*)",
                 )
                 if file_path:
-                    IFDataGenIntegration.set_ifdatagen_path(file_path)
+                    ifdatagen_integration.set_ifdatagen_path(file_path)
                 else:
                     return
             else:
@@ -664,9 +644,9 @@ class MainWindow(QMainWindow):
                 return
 
         # Connect IFDataGen signals
-        IFDataGenIntegration.progress_updated.connect(self.on_generation_progress)
-        IFDataGenIntegration.status_updated.connect(self.on_generation_status)
-        IFDataGenIntegration.generation_finished.connect(self.on_generation_finished)
+        ifdatagen_integration.progress_updated.connect(self.on_generation_progress)
+        ifdatagen_integration.status_updated.connect(self.on_generation_status)
+        ifdatagen_integration.generation_finished.connect(self.on_generation_finished)
 
         # Start signal generation
         self.progress_bar.setVisible(True)
@@ -679,7 +659,7 @@ class MainWindow(QMainWindow):
         # Get output directory from config
         output_dir = os.path.dirname(self.current_file) if self.current_file else None
 
-        success = IFDataGenIntegration.generate_signals(self.config, output_dir)
+        success = ifdatagen_integration.generate_signals(self.config, output_dir)
         if not success:
             self.progress_bar.setVisible(False)
             self.generate_button.setEnabled(True)
@@ -715,11 +695,11 @@ class MainWindow(QMainWindow):
 
         # Disconnect signals to prevent memory leaks
         try:
-            IFDataGenIntegration.progress_updated.disconnect(
+            ifdatagen_integration.progress_updated.disconnect(
                 self.on_generation_progress
             )
-            IFDataGenIntegration.status_updated.disconnect(self.on_generation_status)
-            IFDataGenIntegration.generation_finished.disconnect(
+            ifdatagen_integration.status_updated.disconnect(self.on_generation_status)
+            ifdatagen_integration.generation_finished.disconnect(
                 self.on_generation_finished
             )
         except:
@@ -884,6 +864,12 @@ class MainWindow(QMainWindow):
         """Handle application close event."""
         info("Application closing")
         if self.check_save_changes():
+            # Clean up temporary files before closing
+            try:
+                ifdatagen_integration.cleanup_temp_files()
+            except Exception as e:
+                debug(f"Error during cleanup: {e}")
+            
             info("Application closed successfully")
             event.accept()
         else:
