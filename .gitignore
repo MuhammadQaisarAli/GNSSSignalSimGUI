@@ -13,5 +13,4 @@ wheels/
 
 # other files
 *.log
-logs/
 *.bin

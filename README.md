@@ -256,6 +256,7 @@ The application allows free navigation between tabs while providing intelligent 
 GNSSSignalSimGUI/
 ├── .gitignore
 ├── .python-version
+├── LICENSE
 ├── pyproject.toml
 ├── README.md
 ├── uv.lock
@@ -320,13 +321,16 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](/LICENSE) file for details.
 
 ---
 
 ## Changelog
 
 ### 2025
+
+- 2025/07/02
+  - Add MIT License
 
 - 2025/07/01 [Version 1.0.0]
   - Initial release with complete workflow implementation
