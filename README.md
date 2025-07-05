@@ -1,7 +1,35 @@
-# GNSSSignalSim GUI
+<h1 align="center">GNSS Signal Sim GUI</h1>
 
-**Author:** Muhammad Qaisar Ali
-**GitHub:** [https://github.com/MuhammadQaisarAli](https://github.com/MuhammadQaisarAli)
+<p align="center">
+  <a href="https://github.com/MuhammadQaisarAli/GNSSSignalSimGUI/stargazers">
+    <img src="https://img.shields.io/github/stars/MuhammadQaisarAli/GNSSSignalSimGUI?style=social" alt="GitHub stars">
+  </a>
+  <a href="https://github.com/MuhammadQaisarAli/GNSSSignalSimGUI/network/members">
+    <img src="https://img.shields.io/github/forks/MuhammadQaisarAli/GNSSSignalSimGUI?style=social" alt="GitHub forks">
+  </a>
+  <a href="https://github.com/MuhammadQaisarAli/GNSSSignalSimGUI/releases">
+    <img src="https://img.shields.io/github/v/tag/MuhammadQaisarAli/GNSSSignalSimGUI?label=latest%20tag" alt="Latest tag">
+  </a>
+  <a href="https://github.com/MuhammadQaisarAli/GNSSSignalSimGUI/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/MuhammadQaisarAli/GNSSSignalSimGUI?label=license" alt="License">
+  </a>
+  <a href="https://github.com/MuhammadQaisarAli/GNSSSignalSimGUI">
+    <img src="https://img.shields.io/github/contributors/MuhammadQaisarAli/GNSSSignalSimGUI" alt="Contributors">
+  </a>
+  <a href="https://github.com/MuhammadQaisarAli/GNSSSignalSimGUI/commits/main">
+    <img src="https://img.shields.io/github/last-commit/MuhammadQaisarAli/GNSSSignalSimGUI" alt="Last commit">
+  </a>
+</p>
+<p align="center"><em>GUI front-end for the multi-stage GNSS signal &amp; data simulator.</em></p>
+<p align="center">
+  <a href="https://star-history.com/#MuhammadQaisarAli/GNSSSignalSimGUI&Date">
+    <img src="https://api.star-history.com/svg?repos=MuhammadQaisarAli/GNSSSignalSimGUI&type=Date"
+         alt="Star history chart" width="600">
+  </a>
+</p>
+
+**Author:** Muhammad Qaisar Ali  
+**GitHub:** <https://github.com/MuhammadQaisarAli>
 
 A comprehensive PyQt6-based graphical user interface for configuring GNSS signal simulation parameters of the `IFdataGen` generator in [SignalSim](https://github.com/MuhammadQaisarAli/SignalSim). This application provides an intuitive workflow for creating, editing, and validating configuration files for GNSS signal simulators with support for multiple constellations and advanced trajectory modeling.
 
@@ -341,6 +369,9 @@ This project is licensed under the MIT License - see the [LICENSE](/LICENSE) fil
 ## Changelog
 
 ### 2025
+
+- **2025/07/06**
+  - Update `README` with badges and remove obsolete config.json
 
 - **2025/07/03 [Version 1.0.1]**
   - Add MIT License

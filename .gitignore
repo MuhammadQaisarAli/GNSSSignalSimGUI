@@ -16,3 +16,4 @@ wheels/
 *.bin
 *.tag
 *.exe
+temp.json
