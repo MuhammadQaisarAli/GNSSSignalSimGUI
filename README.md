@@ -372,6 +372,7 @@ This project is licensed under the MIT License - see the [LICENSE](/LICENSE) fil
 
 - **2025/07/06**
   - Update `README` with badges and remove obsolete config.json
+  - Add option to create .tag file in IFDataGen integration and update Generate tab
 
 - **2025/07/03 [Version 1.0.1]**
   - Add MIT License

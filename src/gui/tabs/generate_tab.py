@@ -11,7 +11,7 @@ file management, and real-time output display.
 import os
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QGroupBox,
-    QLineEdit, QPushButton, QLabel, QTextEdit, QComboBox,
+    QLineEdit, QPushButton, QLabel, QTextEdit, QComboBox, QCheckBox,
     QMessageBox, QFileDialog, QSplitter, QScrollArea,
     QSizePolicy, QSpacerItem
 )
@@ -79,6 +79,9 @@ class GenerateTab(QWidget):
         self.browse_file_button.setMaximumWidth(100)
         file_name_layout.addWidget(self.browse_file_button)
         
+        self.create_tag_file_checkbox = QCheckBox("Create .tag file")
+        file_name_layout.addWidget(self.create_tag_file_checkbox)
+
         file_layout.addRow("File Name:", file_name_layout)
 
         # Full path display
@@ -458,7 +461,8 @@ class GenerateTab(QWidget):
         self.generation_started.emit()
 
         # Start generation
-        success = ifdatagen_integration.generate_signals(self.config, self.current_output_path)
+        create_tag = self.create_tag_file_checkbox.isChecked()
+        success = ifdatagen_integration.generate_signals(self.config, self.current_output_path, create_tag_file=create_tag)
         if not success:
             self.generation_in_progress = False
             self.update_generate_button()

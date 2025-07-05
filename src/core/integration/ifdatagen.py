@@ -26,11 +26,12 @@ class IFDataGenWorker(QThread):
     finished = pyqtSignal(bool, str)  # Success, message
     output_received = pyqtSignal(str)  # Raw output from process
 
-    def __init__(self, config_file: str, ifdatagen_path: str, working_dir: str = None):
+    def __init__(self, config_file: str, ifdatagen_path: str, working_dir: str = None, create_tag_file: bool = False):
         super().__init__()
         self.config_file = config_file
         self.ifdatagen_path = ifdatagen_path
         self.working_dir = working_dir or os.path.dirname(self.ifdatagen_path)
+        self.create_tag_file = create_tag_file
         self.process = None
         self._stop_requested = False
 
@@ -69,6 +70,8 @@ class IFDataGenWorker(QThread):
                 config_arg = os.path.abspath(self.config_file)
             
             cmd = [self.ifdatagen_path, "--config", config_arg]
+            if self.create_tag_file:
+                cmd.append("-t")
             debug(f"Running command: {' '.join(cmd)}")
             debug(f"Working directory: {self.working_dir}")
             debug(f"Config file path: {self.config_file}")
@@ -201,7 +204,7 @@ class IFDataGenIntegration(QObject):
         return self.ifdatagen_path is not None and os.path.exists(self.ifdatagen_path)
 
     def generate_signals(
-        self, config: GNSSSignalSimConfig, output_dir: Optional[str] = None
+        self, config: GNSSSignalSimConfig, output_dir: Optional[str] = None, create_tag_file: bool = False
     ) -> bool:
         """Generate signals using IFDataGen.exe."""
         if not self.is_available():
@@ -277,7 +280,7 @@ class IFDataGenIntegration(QObject):
             debug(f"Config file content preview: {json.dumps(config_dict, indent=2)[:200]}...")
 
             # Create and start worker thread (pass working directory for execution)
-            self.worker = IFDataGenWorker(config_file, self.ifdatagen_path, working_dir)
+            self.worker = IFDataGenWorker(config_file, self.ifdatagen_path, working_dir, create_tag_file)
 
             # Connect signals
             self.worker.progress_updated.connect(self.progress_updated)
