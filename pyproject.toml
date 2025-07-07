@@ -1,6 +1,6 @@
 [project]
-name = "gnsssigsimgui"
-version = "1.0.1"
+name = "gnsssignalsimgui"
+version = "0.1.0"
 description = "GNSS SignalSim GUI - Comprehensive GNSS Signal Simulator (SignalSim) Configuration Tool"
 readme = "README.md"
 authors = [
